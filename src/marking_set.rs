@@ -1,13 +1,11 @@
 use std::collections::HashMap;
 use graph::Value;
-use typed_arena::Arena;
 
 use petri_net::*;
 
 pub type MarkingId = usize;
 
 pub struct MarkingSet {
-    storage: Arena<Marking>,
     markings: Vec<Marking>,
     id_map: HashMap<Marking, MarkingId>
 }
