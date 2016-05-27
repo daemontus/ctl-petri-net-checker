@@ -2,7 +2,7 @@ use std::fmt;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Value {
-    Const(i32),
+    Const(u32),
     Ref(String),
 }
 

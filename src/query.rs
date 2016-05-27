@@ -5,7 +5,7 @@ use ctl::Value::*;
 use std::fmt;
 use query::Operator as Op;
 
-type Evaluable = Box<Fn(&Marking) -> i32>;
+type Evaluable = Box<Fn(&Marking) -> u32>;
 
 pub type QueryId = usize;
 pub type Proposition = Box<Fn(&Marking) -> bool>;

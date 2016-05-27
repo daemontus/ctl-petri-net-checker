@@ -1,5 +1,5 @@
 extern crate xml;
-extern crate typed_arena;
+extern crate pnml;
 
 mod ctl;
 mod ctl_parser;
@@ -16,6 +16,8 @@ use xml_util::parse_file;
 use std::env;
 use query::*;
 use graph::*;
+use pnml::pt_net::parser::read_pt_file;
+use petri_net::*;
 use marking_set::*;
 
 fn main() {
@@ -23,7 +25,8 @@ fn main() {
     if args.len() < 4 {
         panic!("Expecting two arguments: model file, query file and query number");
     }
-    let petri_net = parse_file(&args[1], read_net);
+    let pt_net = read_pt_file(&args[1]);
+    let petri_net = PetriNet::new(&pt_net);
     let formulas = parse_file(&args[2], read_set);
     let query_num: isize = args[3].parse().unwrap();
     let mut markings = MarkingSet::new();

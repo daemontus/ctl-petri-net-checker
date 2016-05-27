@@ -8,7 +8,7 @@ use petri_net::PetriParse::*;
 use std::collections::HashMap;
 
 //Read a petri net from parser (creating the transition matrix etc.)
-pub fn read_net<T: Read>(parser: &mut EventReader<T>) -> PetriNet {
+/*pub fn read_net<T: Read>(parser: &mut EventReader<T>) -> PetriNet {
     let events: Vec<PetriParse> = collect_inside("net", parser, |p, event| {
         match event {
             &StartElement { ref name, ref attributes, .. } if name.local_name == "place" => {
@@ -123,3 +123,4 @@ fn read_arc<T: Read>(attributes: &Vec<OwnedAttribute>, parser: &mut EventReader<
         panic!("Arc has no source");
     }
 }
+*/

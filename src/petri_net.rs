@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use pnml::pt_net::Net;
+use pnml::pt_net::Element::*;
 use marking_set::*;
 
-pub type Marking = Vec<i32>;
+pub type Marking = Vec<u32>;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PetriParse {
@@ -17,7 +19,68 @@ pub struct PetriNet {
     pub transitions: HashMap<String, usize>,
     pub initial_marking: Marking,
     //first vector are incoming arcs, sencond outgoing
-    pub matrix: Vec<(Vec<i32>,Vec<i32>)>,
+    pub matrix: Vec<(Vec<u32>,Vec<u32>)>,
+}
+
+impl PetriNet {
+
+    pub fn new(pt_net: &Net) -> PetriNet {
+        let initial_marking = pt_net.elements.iter()
+            .filter_map(|e| match e {
+                &Place { ref initial_marking, .. } => Some(initial_marking.clone()), _ => None
+            }).collect::<Vec<u32>>();
+
+        let places = pt_net.elements.iter()
+            .filter_map(|e| match e { &Place { ref id, .. } => Some(id.clone()), _ => None })
+            .enumerate().map(|(a, b)| (b, a))
+            .collect::<HashMap<String, usize>>();
+
+        let transitions = pt_net.elements.iter()
+            .filter_map(|e| match e { &Transition { ref id } => Some(id.clone()), _ => None })
+            .enumerate().map(|(a, b)| (b, a))
+            .collect::<HashMap<String, usize>>();
+
+        let mut matrix = vec![(vec![0; places.len()], vec![0; places.len()]); transitions.len()];
+
+        for event in &pt_net.elements {
+            match event {
+                &Arc { ref source, ref target, ref inscription, .. } => {
+                    if let Some(source_place) = places.get(&*source) {
+                        //from place to transition
+                        if let Some(target_transition) = transitions.get(&*target) {
+                            matrix[target_transition.clone()].0[source_place.clone()] = inscription.clone();
+                        } else {
+                            panic!("Unknown arc target transition {}", target);
+                        }
+                    } else {
+                        if let Some(source_transition) = transitions.get(&*source) {
+                            //from transtion to place
+                            if let Some(target_place) = places.get(&*target) {
+                                matrix[source_transition.clone()].1[target_place.clone()] = inscription.clone();
+                            } else {
+                                panic!("Unknown arg target place {}", target);
+                            }
+                        } else {
+                            panic!("Unknown arc source {}", source);
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        println!("Places: {:?}", places);
+        println!("Transitions: {:?}", transitions);
+        println!("Initial marking: {:?}", initial_marking);
+
+        PetriNet {
+            places: places,
+            transitions: transitions,
+            initial_marking: initial_marking,
+            matrix: matrix,
+        }
+    }
+
 }
 
 pub struct Successors {

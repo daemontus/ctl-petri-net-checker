@@ -6,6 +6,5 @@ authors = [ "Samuel Pastva <daemontus@gmail.com>" ]
 
 [dependencies]
 
-rand="0.3.0"
+pnml-parser = { git = "https://github.com/daemontus/pnml-parser.git" }
 xml-rs = "0.3.2"
-typed-arena = "1.1.0"
