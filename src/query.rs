@@ -1,6 +1,6 @@
 use petri_net::*;
 use ctl::*;
-use ctl::CTLFormula::*;
+use ctl::Formula::*;
 use ctl::Value::*;
 use std::fmt;
 use query::Operator as Op;
@@ -53,14 +53,14 @@ impl fmt::Debug for Query {
 
 impl Query {
 
-    pub fn from_formula(formula: &CTLFormula, net: &PetriNet, next_id: QueryId) -> (Query, QueryId) {
+    pub fn from_formula(formula: &Formula, net: &PetriNet, next_id: QueryId) -> (Query, QueryId) {
         match formula {
             &LT(ref left, ref right) => as_atom(as_proposition(left, right, net, create_lt), next_id),
             &LE(ref left, ref right) => as_atom(as_proposition(left, right, net, create_le), next_id),
             &GT(ref left, ref right) => as_atom(as_proposition(left, right, net, create_gt), next_id),
             &GE(ref left, ref right) => as_atom(as_proposition(left, right, net, create_ge), next_id),
-            &And(ref left, ref right) => as_binary_query(left, right, net, Op::And, next_id),
-            &Or(ref left, ref right) => as_binary_query(left, right, net, Op::Or, next_id),
+            &And(ref items) => as_binary_list_query(items, net, Op::And, next_id),
+            &Or(ref items) => as_binary_list_query(items, net, Op::Or, next_id),
             &AU(ref left, ref right) => as_binary_query(left, right, net, Op::AU, next_id),
             &EU(ref left, ref right) => as_binary_query(left, right, net, Op::EU, next_id),
             &Not(ref inner) => as_unary_query(inner, net, Op::Not, next_id),
@@ -78,6 +78,7 @@ impl Query {
                 let (af, next_id) = (Query { id: next_id, operator: Op::AF(Box::new(inner_not)) }, next_id + 1);
                 (Query { id: next_id, operator: Op::Not(Box::new(af)) }, next_id + 1)
             }
+            f => panic!("Unsupported formula {}", f),
         }
     }
 }
@@ -86,8 +87,17 @@ fn as_atom(prop: Proposition, next_id: QueryId) -> (Query, QueryId) {
     (Query { id: next_id, operator: Op::Atom(prop) }, next_id + 1)
 }
 
+fn as_binary_list_query<F>(
+    items: &Vec<Formula>,
+    net: &PetriNet, combine: F, next_id: QueryId
+) -> (Query, QueryId) where F : Fn(Box<Query>, Box<Query>) -> Operator {
+    let (r_query, next_id) = Query::from_formula(&items[0], net, next_id);    //right side will have smaller ids
+    let (l_query, next_id) = Query::from_formula(&items[1], net, next_id);
+    (Query { id: next_id, operator: combine(Box::new(l_query), Box::new(r_query)) }, next_id + 1)
+}
+
 fn as_binary_query<F>(
-    left: &Box<CTLFormula>, right: &Box<CTLFormula>,
+    left: &Box<Formula>, right: &Box<Formula>,
     net: &PetriNet, combine: F, next_id: QueryId
 ) -> (Query, QueryId) where F : Fn(Box<Query>, Box<Query>) -> Operator {
     let (r_query, next_id) = Query::from_formula(&*right, net, next_id);    //right side will have smaller ids
@@ -95,7 +105,7 @@ fn as_binary_query<F>(
     (Query { id: next_id, operator: combine(Box::new(l_query), Box::new(r_query)) }, next_id + 1)
 }
 
-fn as_unary_query<F>(inner: &Box<CTLFormula>, net: &PetriNet, combine: F, next_id: QueryId) -> (Query, QueryId)
+fn as_unary_query<F>(inner: &Box<Formula>, net: &PetriNet, combine: F, next_id: QueryId) -> (Query, QueryId)
     where F : Fn(Box<Query>) -> Operator {
     let (inner_query, next_id) = Query::from_formula(&*inner, net, next_id);
     (Query { id: next_id, operator: combine(Box::new(inner_query)) }, next_id + 1)
@@ -103,8 +113,8 @@ fn as_unary_query<F>(inner: &Box<CTLFormula>, net: &PetriNet, combine: F, next_i
 
 fn as_proposition<F>(left: &Value, right: &Value, net: &PetriNet, combine: F) -> Proposition
     where F : Fn(Evaluable, Evaluable) -> Proposition {
-    let l_eval = left.as_evaluable(net);
-    let r_eval = right.as_evaluable(net);
+    let l_eval = as_evaluable(left, net);
+    let r_eval = as_evaluable(right, net);
     combine(l_eval, r_eval)
 }
 
@@ -124,16 +134,14 @@ fn create_ge(left: Evaluable, right: Evaluable) -> Proposition {
     Box::new(move |m| left(m) >= right(m))
 }
 
-impl Value {
-    fn as_evaluable(&self, net: &PetriNet) -> Evaluable {
-        match self {
-            &Const(v) => Box::new(move |_| v),
-            &Ref(ref name) => {
-                if let Some(&index) = net.places.get(&*name) {
-                    Box::new(move |m| m[index])
-                } else {
-                    panic!("Place not found: {}", name);
-                }
+fn as_evaluable(value: &Value, net: &PetriNet) -> Evaluable {
+    match value {
+        &Const(v) => Box::new(move |_| v),
+        &Ref(ref name) => {
+            if let Some(&index) = net.places.get(&*name) {
+                Box::new(move |m| m[index])
+            } else {
+                panic!("Place not found: {}", name);
             }
         }
     }

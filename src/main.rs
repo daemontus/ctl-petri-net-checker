@@ -1,20 +1,16 @@
-extern crate xml;
 extern crate pnml;
+extern crate ctl;
 
-mod ctl;
-mod ctl_parser;
-mod xml_util;
 mod petri_net;
 mod query;
 mod graph;
 mod marking_set;
 
-use ctl_parser::*;
-use xml_util::parse_file;
+use ctl::parser::read_formula_list_file;
+use pnml::pt_net::parser::read_pt_file;
 use std::env;
 use query::*;
 use graph::*;
-use pnml::pt_net::parser::read_pt_file;
 use petri_net::*;
 use marking_set::*;
 
@@ -25,7 +21,7 @@ fn main() {
     }
     let pt_net = read_pt_file(&args[1]);
     let petri_net = PetriNet::new(&pt_net);
-    let formulas = parse_file(&args[2], read_set);
+    let formulas = read_formula_list_file(&args[2]);
     let query_num: isize = args[3].parse().unwrap();
     let mut markings = MarkingSet::new();
     if query_num >= 0 {

@@ -7,4 +7,4 @@ authors = [ "Samuel Pastva <daemontus@gmail.com>" ]
 [dependencies]
 
 pnml-parser = { git = "https://github.com/daemontus/pnml-parser.git" }
-xml-rs = "0.3.2"
+mcc-ctl-parser = { git = "https://github.com/daemontus/mcc-ctl-parser.git" }

@@ -2,14 +2,22 @@
 name = "rust_fun"
 version = "0.0.1"
 dependencies = [
+ "mcc-ctl-parser 0.1.0 (git+https://github.com/daemontus/mcc-ctl-parser.git)",
  "pnml-parser 0.1.0 (git+https://github.com/daemontus/pnml-parser.git)",
- "xml-rs 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "bitflags"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "mcc-ctl-parser"
+version = "0.1.0"
+source = "git+https://github.com/daemontus/mcc-ctl-parser.git#b4b6ae8d6f131023bd4efcfb7f58b5f2e493f5af"
+dependencies = [
+ "xml-rs 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "pnml-parser"
