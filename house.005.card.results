@@ -1,0 +1,53 @@
+Measured on 2012 Macbook Air (i5) with git head on: d01fb9c22861b15e10e5ab2877cbf76a7ce39a78
+real        22.58 user        22.24 sys          0.30
+ 392142848  maximum resident set size
+    126214  page reclaims
+
+
+Places: {"p14": 15, "p3": 2, "p9": 11, "p16": 25, "p22": 19, "p5": 5, "p6": 4, "p10": 12, "p20": 17, "p18": 18, "p7": 6, "p27": 20, "p25": 24, "p17": 14, "p1": 0, "p4": 3, "p11": 8, "p12": 9, "p13": 13, "p8": 10, "p19": 16, "p26": 21, "p21": 22, "p23": 23, "p15": 7, "p2": 1}
+Transitions: {"t4": 3, "t9": 7, "t10": 6, "t5": 8, "t13": 11, "t17": 12, "t11": 10, "t7": 5, "t12": 17, "t2": 1, "t16": 16, "t3": 2, "t8": 9, "t15": 14, "t6": 4, "t18": 13, "t14": 15, "t1": 0}
+Initial marking: [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Query: [3: EF([2: !([1: EF([0: atom])])])]
+Markings: 0
+Markings: 100000
+Markings: 200000
+Markings: 300000
+Markings: 400000
+Markings: 500000
+Markings: 600000
+Markings: 700000
+Markings: 800000
+Markings: 900000
+Markings: 1000000
+Markings: 1100000
+Result: false
+Query: [4: ([3: EX([2: AF([1: atom])])] && [0: atom])]
+Result: false
+Query: [7: ([6: AF([5: atom])] AU [4: ([3: ([2: atom] || [1: atom])] && [0: atom])])]
+Result: false
+Query: [8: !([7: EF([6: !([5: !([4: AF([3: !([2: ([1: atom] || [0: atom])])])])])])])]
+Result: false
+Query: [9: EF([8: ([7: !([6: AF([5: !([4: atom])])])] && [3: !([2: AF([1: !([0: atom])])])])])]
+Result: false
+Query: [5: !([4: AF([3: !([2: AF([1: !([0: atom])])])])])]
+Result: true
+Query: [16: ([15: !([14: AF([13: !([12: ([11: !([10: atom])] || [9: ([8: atom] || [7: atom])])])])])] || [6: ([5: ([4: atom] AU [3: atom])] && [2: AF([1: !([0: atom])])])])]
+Result: true
+Query: [21: ([20: ([19: ([18: atom] || [17: atom])] AU [16: ([15: atom] && [14: atom])])] || [13: ([12: ([11: !([10: ([9: atom] || [8: atom])])] && [7: !([6: EF([5: !([4: atom])])])])] || [3: !([2: AF([1: !([0: atom])])])])])]
+Result: false
+Query: [9: ([8: ([7: !([6: atom])] && [5: !([4: atom])])] AU [3: !([2: EF([1: !([0: atom])])])])]
+Result: true
+Query: [1: AF([0: atom])]
+Result: false
+Query: [18: ([17: ([16: !([15: ([14: !([13: atom])] || [12: atom])])] || [11: !([10: AF([9: atom])])])] || [8: ([7: ([6: !([5: AF([4: !([3: atom])])])] || [2: AX([1: atom])])] || [0: atom])])]
+Result: true
+Query: [10: ([9: EF([8: !([7: ([6: atom] && [5: atom])])])] && [4: !([3: AF([2: !([1: EF([0: atom])])])])])]
+Result: true
+Query: [8: AF([7: ([6: ([5: atom] || [4: ([3: atom] && [2: atom])])] && [1: !([0: atom])])])]
+Result: false
+Query: [7: !([6: EF([5: !([4: !([3: ([2: atom] && [1: !([0: atom])])])])])])]
+Result: true
+Query: [10: ([9: !([8: AF([7: !([6: atom])])])] && [5: ([4: ([3: atom] EU [2: atom])] || [1: AX([0: atom])])])]
+Result: false
+Query: [14: ([13: ([12: ([11: atom] EU [10: atom])] || [9: !([8: AF([7: !([6: ([5: atom] || [4: atom])])])])])] && [3: ([2: atom] || [1: AF([0: atom])])])]
+Result: false
