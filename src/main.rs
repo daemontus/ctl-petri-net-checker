@@ -5,13 +5,11 @@ mod ctl;
 mod ctl_parser;
 mod xml_util;
 mod petri_net;
-mod petri_parser;
 mod query;
 mod graph;
 mod marking_set;
 
 use ctl_parser::*;
-use petri_parser::*;
 use xml_util::parse_file;
 use std::env;
 use query::*;

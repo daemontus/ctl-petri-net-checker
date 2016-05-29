@@ -7,13 +7,6 @@ use marking_set::*;
 pub type Marking = Vec<u32>;
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum PetriParse {
-    Place { name: String, initial: i32, },
-    Transition { name: String },
-    Arc { from: String, to: String, value: i32 },
-}
-
-#[derive(Debug, PartialEq, Eq)]
 pub struct PetriNet {
     pub places: HashMap<String, usize>,
     pub transitions: HashMap<String, usize>,

@@ -22,25 +22,6 @@ pub fn inside<T, R, F>(tag: &str, parser: &mut EventReader<T>, action: F) -> R
     result
 }
 
-///Consume parser events until either end tag is encountered or
-///the action tag is encountered, in which case the action is called.
-pub fn find_until<T, R, F>(tag: &str, end: &str, parser: &mut EventReader<T>, action: F) -> Option<R>
-    where T: Read, F: Fn(&mut EventReader<T>) -> R {
-    drop_until(parser, |p, e| {
-        //first see if we are at the end
-        expect_end(e, end).map_or_else(|| {
-            //if not, try reading the start tag
-            expect_start(e, tag).map(|_| {
-                let result = action(p);
-                expect_tag_close(tag, p);
-                Some(result)
-            })
-        }, |_| Some(None))  //if end, stop dropping but return not found
-    }).unwrap_or_else(|| {
-        panic!("Can't find <{:?}> or </{:?}>", tag, end);
-    })
-}
-
 ///Expect opening tag and then collect items until closing tag is encountered
 ///Action will be called
 pub fn collect_inside<T, F, R>(tag: &str, parser: &mut EventReader<T>, action: F) -> Vec<R>
