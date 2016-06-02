@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use pnml::pt_net::Net;
 use pnml::pt_net::Element::*;
-use marking_set::*;
+
+use storage::*;
 
 pub type Marking = Vec<u32>;
 

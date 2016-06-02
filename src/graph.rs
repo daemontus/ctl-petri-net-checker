@@ -2,7 +2,7 @@ use query::*;
 use query::Operator::*;
 use petri_net::*;
 
-use marking_set::*;
+use storage::*;
 use graph::Value::*;
 
 #[derive(Debug, PartialEq, Eq, Clone)]

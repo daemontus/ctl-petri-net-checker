@@ -4,7 +4,7 @@ extern crate ctl;
 mod petri_net;
 mod query;
 mod graph;
-mod marking_set;
+mod storage;
 
 use ctl::parser::read_formula_list_file;
 use pnml::pt_net::parser::read_pt_file;
@@ -12,7 +12,7 @@ use std::env;
 use query::*;
 use graph::*;
 use petri_net::*;
-use marking_set::*;
+use storage::*;
 
 fn main() {
     let args = env::args().collect::<Vec<String>>();
