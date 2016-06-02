@@ -45,26 +45,20 @@ impl PetriNet {
                         } else {
                             panic!("Unknown arc target transition {}", target);
                         }
-                    } else {
-                        if let Some(source_transition) = transitions.get(&*source) {
-                            //from transtion to place
-                            if let Some(target_place) = places.get(&*target) {
-                                matrix[source_transition.clone()].1[target_place.clone()] = inscription.clone();
-                            } else {
-                                panic!("Unknown arg target place {}", target);
-                            }
+                    } else if let Some(source_transition) = transitions.get(&*source) {
+                        //from transtion to place
+                        if let Some(target_place) = places.get(&*target) {
+                            matrix[source_transition.clone()].1[target_place.clone()] = inscription.clone();
                         } else {
-                            panic!("Unknown arc source {}", source);
+                            panic!("Unknown arg target place {}", target);
                         }
+                    } else {
+                        panic!("Unknown arc source {}", source);
                     }
                 }
                 _ => {}
             }
         }
-
-        println!("Places: {:?}", places);
-        println!("Transitions: {:?}", transitions);
-        println!("Initial marking: {:?}", initial_marking);
 
         PetriNet {
             places: places,
