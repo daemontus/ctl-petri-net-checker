@@ -28,6 +28,17 @@ impl <'a> Graph<'a> {
     fn search_inner(&mut self, net: &PetriNet, root_id: MarkingId, query: &Query) -> bool {
         let q_id = query.id;
         let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
+        macro_rules! next {
+            ($inner:ident, $all:expr) => {{
+                let mut succ = Successors::new(root_id);
+                while let Some(next_id) = succ.pop(&mut working, net, &mut self.markings) {
+                    if $all != self.search_inner(net, next_id, $inner) {
+                        return !$all;
+                    }
+                }
+                $all
+            }};
+        }
         match query.operator {
             //TODO Implement EG/AG as maximum fixed point
             //TODO consider caching the EX/AX answers
@@ -35,35 +46,23 @@ impl <'a> Graph<'a> {
             Not(ref inner) => !self.search_inner(net, root_id, inner),
             And(ref items) => items.into_iter().all(|i| self.search_inner(net, root_id, i)),
             Or(ref items) => items.into_iter().any(|i| self.search_inner(net, root_id, i)),
-            EX(ref inner) => {
-                let mut successors = Successors::new(root_id);
-                while let Some(next_id) = successors.pop(&mut working, net, &mut self.markings) {
-                    if self.search_inner(net, next_id, inner) {
-                        return true;
-                    }
-                }
-                false
-            }
-            AX(ref inner) => {
-                let mut successors = Successors::new(root_id);
-                while let Some(next_id) = successors.pop(&mut working, net, &mut self.markings) {
-                    if ! self.search_inner(net, next_id, inner) {
-                        return false;
-                    }
-                }
-                true
-            }
+            EX(ref inner) => next![inner, false],
+            AX(ref inner) => next![inner, true],
             EF(ref inner) => {
                 if self.assignments[q_id].get(root_id) == Unknown {
-                    let mut list: Vec<Successors> = Vec::new();
-                    let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
+                    let mut list: Vec<Successors> = Vec::new(); //DFS stack
                     list.push(Successors::new(root_id));
                     while let Some(mut config) = list.pop() {
-                        if self.assignments[q_id].get(config.source_id) == Unknown && self.search_inner(net, config.source_id, inner) {
-                            self.assignments[q_id].set(config.source_id, One);
-                            while let Some(config) = list.pop() {
+                        macro_rules! clean_up {
+                            () => {{
                                 self.assignments[q_id].set(config.source_id, One);
-                            }
+                                while let Some(config) = list.pop() {
+                                    self.assignments[q_id].set(config.source_id, One);
+                                }
+                            }}
+                        }
+                        if self.assignments[q_id].get(config.source_id) == Unknown && self.search_inner(net, config.source_id, inner) {
+                            clean_up![];
                         } else {
                             self.assignments[q_id].set(config.source_id, Zero);
                             while let Some(next_id) = config.pop(&mut working, net, &mut self.markings) {
@@ -77,10 +76,7 @@ impl <'a> Graph<'a> {
                                         break;
                                     }
                                     One => {    //found something true from previous run
-                                        self.assignments[q_id].set(config.source_id, One);
-                                        while let Some(config) = list.pop() {
-                                            self.assignments[q_id].set(config.source_id, One);
-                                        }
+                                        clean_up![];
                                         break;
                                     }
                                 }
