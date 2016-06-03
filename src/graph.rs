@@ -29,23 +29,10 @@ impl <'a> Graph<'a> {
         let q_id = query.id;
         match query.operator {
             //TODO Implement EG/AG as maximum fixed point
-            Atom(ref proposition) => {  //evaluate proposition
-                let ref marking = self.markings.get(root_id);
-                let res = proposition(marking);
-                //println!("Prop: {:?}", res);
-                return res;
-            }
-            Not(ref inner) => {
-                let res = !self.search_inner(net, root_id, inner);
-                //println!("Not: {:?}", res);
-                return res;
-            }
-            And(ref items) => {
-                items.into_iter().all(|i| self.search_inner(net, root_id, i))
-            }
-            Or(ref items) => {
-                items.into_iter().any(|i| self.search_inner(net, root_id, i))
-            }
+            Atom(ref proposition) => proposition(self.markings.get(root_id)),
+            Not(ref inner) => !self.search_inner(net, root_id, inner),
+            And(ref items) => items.into_iter().all(|i| self.search_inner(net, root_id, i)),
+            Or(ref items) => items.into_iter().any(|i| self.search_inner(net, root_id, i)),
             EX(ref inner) => {
                 if self.assignments[q_id].get(root_id) == Unknown {
                     let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
