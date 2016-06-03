@@ -132,7 +132,6 @@ impl <'a> Graph<'a> {
             EU(ref path, ref reach) => exists_path![reach, path],
             AF(ref inner) => all_paths![inner],
             AU(ref path, ref reach) => all_paths![reach, path],
-            _ => panic!("Unsupported!"),
         }
     }
 
