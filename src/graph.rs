@@ -11,12 +11,12 @@ pub enum Value { One, Zero, Unknown }
 pub struct Graph<'a> {
     //first dimension is indexed by queries, second by markings
     assignments: Vec<AssignmentSet>,
-    markings: &'a mut MarkingSet,
+    markings: &'a mut MarkingSet<'a>,
 }
 
 impl <'a> Graph<'a> {
 
-    pub fn new<'b>(query: &Query, markings: &'b mut MarkingSet) -> Graph<'b> {
+    pub fn new<'b>(query: &Query, markings: &'b mut MarkingSet<'b>) -> Graph<'b> {
         Graph { assignments: vec![AssignmentSet::new(); query.id + 1], markings: markings }
     }
 

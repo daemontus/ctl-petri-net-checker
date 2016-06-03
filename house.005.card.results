@@ -51,3 +51,9 @@ Query: [10: ([9: !([8: AF([7: !([6: atom])])])] && [5: ([4: ([3: atom] EU [2: at
 Result: false
 Query: [14: ([13: ([12: ([11: atom] EU [10: atom])] || [9: !([8: AF([7: !([6: ([5: atom] || [4: atom])])])])])] && [3: ([2: atom] || [1: AF([0: atom])])])]
 Result: false
+
+
+Just the first query:
+Result: false
+real         5.53
+ 229400576  maximum resident set size

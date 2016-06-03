@@ -1,31 +1,34 @@
 use std::collections::HashMap;
 use graph::Value;
+use typed_arena::Arena;
 
 use petri_net::*;
 
 pub type MarkingId = usize;
 
-pub struct MarkingSet {
-    markings: Vec<Marking>,
-    id_map: HashMap<Marking, MarkingId>
+pub struct MarkingSet<'a> {
+    storage: &'a Arena<Marking>,
+    markings: Vec<&'a Marking>,
+    id_map: HashMap<&'a Marking, MarkingId>
 }
 
-impl MarkingSet {
+impl <'a> MarkingSet<'a> {
 
-    pub fn new() -> MarkingSet {
-        MarkingSet { markings: Vec::new(), id_map: HashMap::new() }
+    pub fn new<'b>(arena: &'b Arena<Marking>) -> MarkingSet<'b> {
+        MarkingSet { storage: arena, markings: Vec::new(), id_map: HashMap::new() }
     }
 
     pub fn insert(&mut self, marking: &Marking) -> MarkingId {
         if self.id_map.contains_key(marking) {
             self.id_map[marking]
         } else {
+            let marking_ref = self.storage.alloc(marking.clone());
             let new_id = self.markings.len();
             if new_id % 100000 == 0 {
                 println!("Markings: {:?}", new_id);
             }
-            self.markings.push(marking.clone());
-            self.id_map.insert(marking.clone(), new_id);
+            self.markings.push(marking_ref);
+            self.id_map.insert(marking_ref, new_id);
             new_id
         }
     }

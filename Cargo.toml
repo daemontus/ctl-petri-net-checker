@@ -6,5 +6,6 @@ authors = [ "Samuel Pastva <daemontus@gmail.com>" ]
 
 [dependencies]
 
+typed-arena = "1.2.0"
 pnml-parser = { git = "https://github.com/daemontus/pnml-parser.git" }
 mcc-ctl-parser = { git = "https://github.com/daemontus/mcc-ctl-parser.git" }

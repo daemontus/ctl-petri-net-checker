@@ -4,6 +4,7 @@ version = "0.0.1"
 dependencies = [
  "mcc-ctl-parser 0.1.0 (git+https://github.com/daemontus/mcc-ctl-parser.git)",
  "pnml-parser 0.1.0 (git+https://github.com/daemontus/pnml-parser.git)",
+ "typed-arena 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -26,6 +27,11 @@ source = "git+https://github.com/daemontus/pnml-parser.git#a3d614ef8408cf4407a35
 dependencies = [
  "xml-rs 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "typed-arena"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "xml-rs"
