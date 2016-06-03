@@ -12,7 +12,7 @@ pub struct PetriNet {
     pub places: HashMap<String, usize>,
     pub transitions: HashMap<String, usize>,
     pub initial_marking: Marking,
-    //first vector are incoming arcs, sencond outgoing
+    //first vector are incoming arcs, second outgoing
     pub matrix: Vec<(Vec<u32>,Vec<u32>)>,
 }
 

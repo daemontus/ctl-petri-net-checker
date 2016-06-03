@@ -40,15 +40,11 @@ impl <'a> Graph<'a> {
                 //println!("Not: {:?}", res);
                 return res;
             }
-            And(ref left, ref right) => {
-                let res = self.search_inner(net, root_id, right) && self.search_inner(net, root_id, left);
-                //println!("And: {:?}", res);
-                return res;
+            And(ref items) => {
+                items.into_iter().all(|i| self.search_inner(net, root_id, i))
             }
-            Or(ref left, ref right) => {
-                let res = self.search_inner(net, root_id, right) || self.search_inner(net, root_id, left);
-                //println!("Or: {:?}", res);
-                return res;
+            Or(ref items) => {
+                items.into_iter().any(|i| self.search_inner(net, root_id, i))
             }
             EX(ref inner) => {
                 if self.assignments[q_id].get(root_id) == Unknown {
@@ -234,8 +230,8 @@ impl <'a> Graph<'a> {
                 }
                 return self.assignments[q_id].get(root_id) == One;
             }
+            _ => panic!("Unsupported!"),
         }
-        //panic!("Unsupported!");
     }
 
 }
