@@ -1,4 +1,5 @@
 extern crate typed_arena;
+extern crate clap;
 extern crate pnml;
 extern crate ctl;
 
@@ -9,22 +10,37 @@ mod storage;
 
 use ctl::parser::read_formula_list_file;
 use pnml::pt_net::parser::read_pt_file;
+use clap::{Arg, App};
 use typed_arena::Arena;
-use std::env;
 use query::*;
 use graph::*;
 use petri_net::*;
 use storage::*;
 
 fn main() {
-    let args = env::args().collect::<Vec<String>>();
-    if args.len() < 4 {
-        panic!("Expecting two arguments: model file, query file and query number");
-    }
-    let pt_net = read_pt_file(&args[1]);
+    let matches = App::new("Explicit CTL checker")
+                        .version("0.1")
+                        .author("Samuel Pastva <daemontus@gmail.com>")
+                        .about("Verification tool for petri nets.")
+                        .arg(Arg::with_name("model")
+                            .short("m").long("model")
+                            .value_name("PNML FILE")
+                            .required(true)
+                            .takes_value(true))
+                        .arg(Arg::with_name("queries")
+                            .short("q").long("queries")
+                            .value_name("XML QUERY FILE")
+                            .required(true)
+                            .takes_value(true))
+                        .arg(Arg::with_name("number")
+                            .short("n").long("number")
+                            .value_name("NUMBER")
+                            .takes_value(true))
+                        .get_matches();
+    let pt_net = read_pt_file(matches.value_of("model").unwrap());
     let petri_net = PetriNet::new(&pt_net);
-    let formulas = read_formula_list_file(&args[2]);
-    let query_num: isize = args[3].parse().unwrap();
+    let formulas = read_formula_list_file(matches.value_of("queries").unwrap());
+    let query_num: isize = matches.value_of("number").unwrap_or("-1").parse().unwrap();
     let arena = Arena::new();
     let mut markings = MarkingSet::new(&arena);
     let mut graph = Graph::new(&mut markings);
