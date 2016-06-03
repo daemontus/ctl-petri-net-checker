@@ -27,39 +27,31 @@ impl <'a> Graph<'a> {
 
     fn search_inner(&mut self, net: &PetriNet, root_id: MarkingId, query: &Query) -> bool {
         let q_id = query.id;
+        let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
         match query.operator {
             //TODO Implement EG/AG as maximum fixed point
+            //TODO consider caching the EX/AX answers
             Atom(ref proposition) => proposition(self.markings.get(root_id)),
             Not(ref inner) => !self.search_inner(net, root_id, inner),
             And(ref items) => items.into_iter().all(|i| self.search_inner(net, root_id, i)),
             Or(ref items) => items.into_iter().any(|i| self.search_inner(net, root_id, i)),
             EX(ref inner) => {
-                if self.assignments[q_id].get(root_id) == Unknown {
-                    let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
-                    self.assignments[q_id].set(root_id, Zero);
-                    let mut config = Successors::new(root_id);
-                    while let Some(next_id) = config.pop(&mut working, net, &mut self.markings) {
-                        if self.search_inner(net, next_id, inner) {
-                            self.assignments[q_id].set(root_id, One);
-                            break;
-                        }
+                let mut successors = Successors::new(root_id);
+                while let Some(next_id) = successors.pop(&mut working, net, &mut self.markings) {
+                    if self.search_inner(net, next_id, inner) {
+                        return true;
                     }
                 }
-                return self.assignments[q_id].get(root_id) == One;
+                false
             }
             AX(ref inner) => {
-                if self.assignments[q_id].get(root_id) == Unknown {
-                    let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
-                    self.assignments[q_id].set(root_id, One);
-                    let mut config = Successors::new(root_id);
-                    while let Some(next_id) = config.pop(&mut working, net, &mut self.markings) {
-                        if !self.search_inner(net, next_id, inner) {
-                            self.assignments[q_id].set(root_id, Zero);
-                            break;
-                        }
+                let mut successors = Successors::new(root_id);
+                while let Some(next_id) = successors.pop(&mut working, net, &mut self.markings) {
+                    if ! self.search_inner(net, next_id, inner) {
+                        return false;
                     }
                 }
-                return self.assignments[q_id].get(root_id) == One;
+                true
             }
             EF(ref inner) => {
                 if self.assignments[q_id].get(root_id) == Unknown {

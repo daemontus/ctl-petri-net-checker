@@ -5,6 +5,7 @@ use ctl::Value::*;
 use std::fmt;
 use query::Operator as Op;
 
+//TODO: don't use closures for propositions, they are slow (maybe wait with this for direct intercompilation)
 type Evaluable = Box<Fn(&Marking) -> u32>;
 
 pub type QueryId = usize;
