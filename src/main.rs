@@ -34,7 +34,7 @@ fn main() {
                             .takes_value(true))
                         .arg(Arg::with_name("number")
                             .short("n").long("number")
-                            .value_name("NUMBER")
+                            .value_name("QUERY NUMBER")
                             .takes_value(true))
                         .get_matches();
     let pt_net = read_pt_file(matches.value_of("model").unwrap());
