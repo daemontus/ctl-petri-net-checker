@@ -27,19 +27,17 @@ fn main() {
     let query_num: isize = args[3].parse().unwrap();
     let arena = Arena::new();
     let mut markings = MarkingSet::new(&arena);
+    let mut graph = Graph::new(&mut markings);
     if query_num >= 0 {
         let (query, _) = Query::from_formula(&formulas[query_num as usize], &petri_net, 0);
-        println!("Query: {:?}", query);
-        let mut graph = Graph::new(&query, &mut markings);
+        println!("Query: {:?}", formulas[query_num as usize]);
         println!("Result: {:?}", graph.search(&petri_net, &query));
     } else {
         //batch
-        /*for formula in formulas {
+        for formula in formulas {
             let (query, _) = Query::from_formula(&formula, &petri_net, 0);
-            println!("Query: {:?}", query);
-            let mut graph = Graph::new(&query, &mut markings);
+            println!("Query: {:?}", formula);
             println!("Result: {:?}", graph.search(&petri_net, &query));
-        }*/
+        }
     }
-    //search(&petri_net, &query);
 }

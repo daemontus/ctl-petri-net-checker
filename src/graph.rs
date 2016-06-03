@@ -16,11 +16,13 @@ pub struct Graph<'a> {
 
 impl <'a> Graph<'a> {
 
-    pub fn new<'b>(query: &Query, markings: &'b mut MarkingSet<'b>) -> Graph<'b> {
-        Graph { assignments: vec![AssignmentSet::new(); query.id + 1], markings: markings }
+    pub fn new<'b>(markings: &'b mut MarkingSet<'b>) -> Graph<'b> {
+        Graph { assignments: vec![], markings: markings }
     }
 
     pub fn search(&mut self, net: &PetriNet, query: &Query) -> bool {
+        self.assignments.clear();
+        self.assignments.resize(query.id + 1, AssignmentSet::new());
         let id = self.markings.insert(&net.initial_marking);
         self.search_inner(net, id, query)
     }
