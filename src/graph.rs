@@ -39,44 +39,33 @@ impl <'a> Graph<'a> {
                 $all
             }};
         }
-        match query.operator {
-            //TODO Implement EG/AG as maximum fixed point
-            //TODO consider caching the EX/AX answers
-            Atom(ref proposition) => proposition(self.markings.get(root_id)),
-            Not(ref inner) => !self.search_inner(net, root_id, inner),
-            And(ref items) => items.into_iter().all(|i| self.search_inner(net, root_id, i)),
-            Or(ref items) => items.into_iter().any(|i| self.search_inner(net, root_id, i)),
-            EX(ref inner) => next![inner, false],
-            AX(ref inner) => next![inner, true],
-            EF(ref inner) => {
+        macro_rules! exists_path {
+            ($reach:ident) => (exists_path![$reach, false, $reach]);
+            ($reach:ident, $path:ident) => (exists_path![$reach, true, $path]);
+            ($reach:ident, $until: expr, $path:ident) => {{
                 if self.assignments[q_id].get(root_id) == Unknown {
-                    let mut list: Vec<Successors> = Vec::new(); //DFS stack
-                    list.push(Successors::new(root_id));
-                    while let Some(mut config) = list.pop() {
-                        macro_rules! clean_up {
-                            () => {{
-                                self.assignments[q_id].set(config.source_id, One);
-                                while let Some(config) = list.pop() {
-                                    self.assignments[q_id].set(config.source_id, One);
-                                }
-                            }}
-                        }
-                        if self.assignments[q_id].get(config.source_id) == Unknown && self.search_inner(net, config.source_id, inner) {
-                            clean_up![];
+                    let mut stack: Vec<Successors> = vec![Successors::new(root_id)]; //DFS stack
+                    while let Some(mut succ) = stack.pop() {
+                        macro_rules! found_it { () => {{
+                                self.assignments[q_id].set(succ.source_id, One);
+                                for s in &stack { self.assignments[q_id].set(s.source_id, One) };
+                                return true;
+                        }}}
+                        if self.assignments[q_id].get(succ.source_id) == Unknown &&
+                            self.search_inner(net, succ.source_id, $reach) {
+                            found_it![];
                         } else {
-                            self.assignments[q_id].set(config.source_id, Zero);
-                            while let Some(next_id) = config.pop(&mut working, net, &mut self.markings) {
+                            self.assignments[q_id].set(succ.source_id, Zero);
+                            if $until && !self.search_inner(net, succ.source_id, $path) {
+                                continue;
+                            }
+                            while let Some(next_id) = succ.pop(&mut working, net, &mut self.markings) {
                                 match self.assignments[q_id].get(next_id) {
-                                    Zero => {   //skip!
-                                        continue;
-                                    }
-                                    Unknown => {    //we have to go deeper!
-                                        list.push(config);  //repush this config so that we can return to it
-                                        list.push(Successors::new(next_id));
-                                        break;
-                                    }
-                                    One => {    //found something true from previous run
-                                        clean_up![];
+                                    Zero => continue,       //skip!
+                                    One => found_it![],     //found something true from previous run
+                                    Unknown => {            //we have to go deeper!
+                                        stack.push(succ);   //repush this config so that we can return to it
+                                        stack.push(Successors::new(next_id));
                                         break;
                                     }
                                 }
@@ -84,75 +73,38 @@ impl <'a> Graph<'a> {
                         }
                     }
                 }
-                return self.assignments[q_id].get(root_id) == One;
-            }
-            EU(ref path, ref reach) => {
+                self.assignments[q_id].get(root_id) == One
+            }}
+        }
+        macro_rules! all_paths {
+            ($reach:ident) => (all_paths![$reach, false, $reach]);
+            ($reach:ident, $path:ident) => (all_paths![$reach, true, $path]);
+            ($reach:ident, $until:expr, $path:ident) => {{
                 if self.assignments[q_id].get(root_id) == Unknown {
-                    let mut list: Vec<Successors> = Vec::new();
-                    let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
-                    list.push(Successors::new(root_id));
-                    while let Some(mut config) = list.pop() {
-                        if self.assignments[q_id].get(config.source_id) == Unknown && self.search_inner(net, config.source_id, reach) {
-                            self.assignments[q_id].set(config.source_id, One);
-                            while let Some(config) = list.pop() {
-                                self.assignments[q_id].set(config.source_id, One);
-                            }
+                    let mut stack: Vec<Successors> = vec![Successors::new(root_id)];
+                    while let Some(mut succ) = stack.pop() {
+                        if self.assignments[q_id].get(succ.source_id) == Unknown &&
+                            self.search_inner(net, succ.source_id, $reach) {
+                            self.assignments[q_id].set(succ.source_id, One);
                         } else {
-                            self.assignments[q_id].set(config.source_id, Zero);
-                            if self.search_inner(net, config.source_id, path) {
-                                while let Some(next_id) = config.pop(&mut working, net, &mut self.markings) {
-                                    match self.assignments[q_id].get(next_id) {
-                                        Zero => {   //skip!
-                                            continue;
-                                        }
-                                        Unknown => {    //we have to go deeper!
-                                            list.push(config);  //repush this config so that we can return to it
-                                            list.push(Successors::new(next_id));
-                                            break;
-                                        }
-                                        One => {    //found something true from previous run
-                                            self.assignments[q_id].set(config.source_id, One);
-                                            while let Some(config) = list.pop() {
-                                                self.assignments[q_id].set(config.source_id, One);
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }   //else: no successors, config stays zero
+                            self.assignments[q_id].set(succ.source_id, Zero);
+                            if $until && !self.search_inner(net, succ.source_id, $path) {
+                                continue;
                             }
-                        }
-                    }
-                }
-                return self.assignments[q_id].get(root_id) == One;
-            }
-            AF(ref inner) => {
-                if self.assignments[q_id].get(root_id) == Unknown {
-                    let mut list: Vec<Successors> = Vec::new();
-                    let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
-                    list.push(Successors::new(root_id));
-                    while let Some(mut config) = list.pop() {
-                        if self.assignments[q_id].get(config.source_id) == Unknown && self.search_inner(net, config.source_id, inner) {
-                            self.assignments[q_id].set(config.source_id, One);
-                        } else {
-                            self.assignments[q_id].set(config.source_id, Zero);
                             let mut all_one = true;
                             let mut not_empty = false;
-                            let id_copy = config.source_id;
-                            while let Some(next_id) = config.pop(&mut working, net, &mut self.markings) {
+                            let id_copy = succ.source_id;
+                            while let Some(next_id) = succ.pop(&mut working, net, &mut self.markings) {
                                 not_empty = true;
                                 match self.assignments[q_id].get(next_id) {
-                                    Zero => {
-                                        return false;
-                                    }
-                                    Unknown => {    //we have to go deeper!
+                                    Zero => return false,   //dead end
+                                    One => continue,        //found something true from previous run
+                                    Unknown => {            //we have to go deeper!
                                         all_one = false;
-                                        config.repeat_last();
-                                        list.push(config);  //repush this config so that we can return to it
-                                        list.push(Successors::new(next_id));
+                                        succ.repeat_last();
+                                        stack.push(succ);  //repush this config so that we can return to it
+                                        stack.push(Successors::new(next_id));
                                         break;
-                                    }
-                                    One => {    //found something true from previous run
-                                        continue;
                                     }
                                 }
                             }   //else: no more successors, config stays zero
@@ -163,48 +115,21 @@ impl <'a> Graph<'a> {
                     }
                 }
                 return self.assignments[q_id].get(root_id) == One;
-            }
-            AU(ref path, ref reach) => {
-                if self.assignments[q_id].get(root_id) == Unknown {
-                    let mut list: Vec<Successors> = Vec::new();
-                    let mut working: Marking = net.initial_marking.clone(); //it has to be the same length
-                    list.push(Successors::new(root_id));
-                    while let Some(mut config) = list.pop() {
-                        if self.assignments[q_id].get(config.source_id) == Unknown && self.search_inner(net, config.source_id, reach) {
-                            self.assignments[q_id].set(config.source_id, One);
-                        } else {
-                            self.assignments[q_id].set(config.source_id, Zero);
-                            if self.search_inner(net, config.source_id, path) {
-                                let mut all_one = true;
-                                let mut not_empty = false;
-                                let id_copy = config.source_id;
-                                while let Some(next_id) = config.pop(&mut working, net, &mut self.markings) {
-                                    not_empty = true;
-                                    match self.assignments[q_id].get(next_id) {
-                                        Zero => {
-                                            return false;
-                                        }
-                                        Unknown => {    //we have to go deeper!
-                                            all_one = false;
-                                            config.repeat_last();
-                                            list.push(config);  //repush this config so that we can return to it
-                                            list.push(Successors::new(next_id));
-                                            break;
-                                        }
-                                        One => {    //found something true from previous run
-                                            continue;
-                                        }
-                                    }
-                                }   //else: no more successors, config stays zero
-                                if all_one && not_empty {
-                                    self.assignments[q_id].set(id_copy, One);
-                                }
-                            }
-                        }
-                    }
-                }
-                return self.assignments[q_id].get(root_id) == One;
-            }
+            }}
+        }
+        match query.operator {
+            //TODO Implement EG/AG as maximum fixed point
+            //TODO consider caching the EX/AX answers
+            Atom(ref proposition) => proposition(self.markings.get(root_id)),
+            Not(ref inner) => !self.search_inner(net, root_id, inner),
+            And(ref items) => items.into_iter().all(|i| self.search_inner(net, root_id, i)),
+            Or(ref items) => items.into_iter().any(|i| self.search_inner(net, root_id, i)),
+            EX(ref inner) => next![inner, false],
+            AX(ref inner) => next![inner, true],
+            EF(ref inner) => exists_path![inner],
+            EU(ref path, ref reach) => exists_path![reach, path],
+            AF(ref inner) => all_paths![inner],
+            AU(ref path, ref reach) => all_paths![reach, path],
             _ => panic!("Unsupported!"),
         }
     }
