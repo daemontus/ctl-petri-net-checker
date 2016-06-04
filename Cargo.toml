@@ -1,6 +1,6 @@
 [package]
 
-name = "Petri net CTL model checker"
+name = "ctl-checker"
 version = "0.9.0"
 authors = [ "Samuel Pastva <daemontus@gmail.com>" ]
 

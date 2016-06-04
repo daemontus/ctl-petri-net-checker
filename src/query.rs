@@ -167,11 +167,12 @@ fn create_ge(left: Evaluable, right: Evaluable) -> Proposition {
 fn as_evaluable(value: &Value, net: &PetriNet) -> Evaluable {
     match value {
         &Const(v) => Box::new(move |_| v),
-        &Ref(ref name) => {
-            if let Some(&index) = net.places.get(&*name) {
-                Box::new(move |m| m[index])
-            } else {
-                panic!("Place not found: {}", name);
+        &Ref(ref names) => {
+            let indices = names.into_iter().filter_map(|name| net.places.get(&*name)).map(|i| i.clone()).collect::<Vec<usize>>();
+            if indices.len() != names.len() {
+                panic!("Some place not found in {:?}", names);
+            } else {    //TODO: Can we do it without clone?
+                Box::new(move |m| indices.clone().into_iter().map(|i| m[i]).fold(0, |a, b| a + b))
             }
         }
     }
