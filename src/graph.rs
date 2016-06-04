@@ -47,10 +47,13 @@ impl <'a> Graph<'a> {
             ($reach:ident, $until: expr, $path:ident) => {{
                 if self.assignments[q_id].get(root_id) == Unknown {
                     let mut stack: Vec<Successors> = vec![Successors::new(root_id)]; //DFS stack
+                    let mut visited: Vec<MarkingId> = vec![root_id];
                     while let Some(mut succ) = stack.pop() {
                         macro_rules! found_it { () => {{
                                 self.assignments[q_id].set(succ.source_id, One);
-                                for s in &stack { self.assignments[q_id].set(s.source_id, One) };
+                                for s in &visited {
+                                    self.assignments[q_id].set(*s, One)
+                                };
                                 return true;
                         }}}
                         if self.assignments[q_id].get(succ.source_id) == Unknown &&
@@ -68,6 +71,7 @@ impl <'a> Graph<'a> {
                                     Unknown => {            //we have to go deeper!
                                         stack.push(succ);   //repush this config so that we can return to it
                                         stack.push(Successors::new(next_id));
+                                        visited.push(next_id);
                                         break;
                                     }
                                 }
