@@ -2,6 +2,7 @@ extern crate typed_arena;
 extern crate clap;
 extern crate pnml;
 extern crate ctl;
+extern crate twox_hash;
 
 mod petri_net;
 mod query;

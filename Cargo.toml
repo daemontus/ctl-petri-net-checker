@@ -6,6 +6,7 @@ authors = [ "Samuel Pastva <daemontus@gmail.com>" ]
 
 [dependencies]
 
+twox-hash = "1.0.0" #TODO: experiment with other hash functions
 typed-arena = "1.2.0"
 clap = "2.5.2"
 pnml-parser = { git = "https://github.com/daemontus/pnml-parser.git" }

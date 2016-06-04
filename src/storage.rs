@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use twox_hash::RandomXxHashBuilder;
 use graph::Value;
 use typed_arena::Arena;
 
@@ -9,13 +10,13 @@ pub type MarkingId = usize;
 pub struct MarkingSet<'a> {
     storage: &'a Arena<Marking>,
     markings: Vec<&'a Marking>,
-    id_map: HashMap<&'a Marking, MarkingId>
+    id_map: HashMap<&'a Marking, MarkingId, RandomXxHashBuilder>
 }
 
 impl <'a> MarkingSet<'a> {
 
     pub fn new<'b>(arena: &'b Arena<Marking>) -> MarkingSet<'b> {
-        MarkingSet { storage: arena, markings: Vec::new(), id_map: HashMap::new() }
+        MarkingSet { storage: arena, markings: Vec::new(), id_map: Default::default() }
     }
 
     pub fn insert(&mut self, marking: &Marking) -> MarkingId {
