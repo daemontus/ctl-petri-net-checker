@@ -40,6 +40,7 @@ impl <'a> MarkingSet<'a> {
 
 }
 
+///Used to store previously computed successors
 pub struct SuccessorCache {
     successors: Vec<Vec<MarkingId>>,
     next_transition: Vec<usize>,
@@ -51,20 +52,26 @@ impl SuccessorCache {
         SuccessorCache { successors: Vec::new(), next_transition: Vec::new() }
     }
 
-    pub fn get(&self, marking: MarkingId, index: usize) -> Option<&MarkingId> {
-        self.successors[marking].get(index)
+    ///Get successor with given index assuming that successor is cached.
+    pub fn get(&self, marking: MarkingId, index: usize) -> Option<MarkingId> {
+        self.successors.get(marking).and_then(|v| v.get(index)).map(|s| s.clone())
     }
 
-    pub fn next_transition(&self, marking: MarkingId) -> usize {
-        //self.next_transition.get(marking).unwrap_or(0)
-        0
+    ///Notify the cache that next transition has been explored
+    pub fn pop_transition(&mut self, marking: MarkingId) -> usize {
+        if marking >= self.next_transition.len() {
+            self.next_transition.resize(marking + 1, 0);
+        }
+        let t = self.next_transition[marking];
+        self.next_transition[marking] += 1;
+        t
     }
 
-    pub fn pop_transition(&mut self, marking: MarkingId) {
-        self.next_transition[marking] = self.next_transition[marking] + 1;
-    }
-
+    ///Asociate successor with a marking
     pub fn push_successor(&mut self, marking: MarkingId, successor: MarkingId) {
+        if marking >= self.successors.len() {
+            self.successors.resize(marking + 1, Vec::new());
+        }
         self.successors[marking].push(successor);
     }
 

@@ -16,6 +16,21 @@ pub trait Successors {
     fn repeat_last(&mut self);
 }
 
+///fire specific transition if possible and save result in dest. If transition is not valid,
+///return false and contents of dest are undefined.
+fn fire_transition(dest: &mut Marking, source: &Marking, transition: &(Vec<u32>, Vec<u32>)) -> bool {
+    let mut valid = true;
+    for i in 0..source.len() {
+        if source[i] >= transition.0[i] {
+            dest[i] = source[i] - transition.0[i] + transition.1[i];
+        } else {
+            valid = false;
+            break;
+        }
+    }
+    valid
+}
+
 ///Fully On-the-fly implementation of successor iterator
 pub struct OTFSuccessors {
     next_transition: usize,
@@ -28,30 +43,19 @@ impl Successors for OTFSuccessors {
     }
 
     fn repeat_last(&mut self) {
-        if self.next_transition == 0 {
-            panic!("No last!");
-        } else {
-            self.next_transition -= 1;
-        }
+        self.next_transition = self.next_transition.checked_sub(1).unwrap();
     }
 
     fn pop(&mut self, source_id: MarkingId, graph: &mut Graph, cache: &mut Marking) -> Option<MarkingId> {
         while self.next_transition < graph.net.matrix.len() {
-            let mut valid = true;
+            let fired;
             {
                 let ref transition = graph.net.matrix[self.next_transition];
                 let ref source = graph.markings.get(source_id);
-                for i in 0..source.len() {
-                    if source[i] >= transition.0[i] {
-                        cache[i] = source[i] - transition.0[i] + transition.1[i];
-                    } else {
-                        valid = false;
-                        break;
-                    }
-                }
-            } // end source borrow
+                fired = fire_transition(cache, source, transition);
+            } //end source borrow so that we can access the graph
             self.next_transition += 1;
-            if valid {
+            if fired {
                 let id = graph.markings.insert(&cache);
                 return Some(id);
             }
@@ -60,59 +64,42 @@ impl Successors for OTFSuccessors {
     }
 }
 
-/*
-pub struct Successors<S> {
-    pub source_id: MarkingId,
-    function: S,
+pub struct CachedSuccessors {
+    next_index: usize,
 }
 
-impl <S: SuccessorFunction> Successors<S> {
+impl Successors for CachedSuccessors {
 
-    pub fn new(source_id: MarkingId) -> Successors<S> {
-        Successors { source_id: source_id, function: S::new() }
+    fn new() -> CachedSuccessors {
+        CachedSuccessors { next_index: 0 }
     }
 
-    pub fn repeat_last(&mut self) {
-        self.function.repeat_last();
-        /*if self.cache_index == 0 {
-            panic!("No last!");
-        } else {
-            self.cache_index -= 1;
-        }*/
+    fn repeat_last(&mut self) {
+        self.next_index = self.next_index.checked_sub(1).unwrap();
     }
 
-    pub fn pop(&mut self, dest: &mut Marking, net: &PetriNet, markings: &mut MarkingSet) -> Option<MarkingId> {
-        self.function.pop(self.source_id, dest, net, markings)
-        /*if self.cache_index < markings.successors[self.source_id].len() {
-            self.cache_index += 1;
-            return Some(markings.successors[self.source_id][self.cache_index - 1]);
+    fn pop(&mut self, source_id: MarkingId, graph: &mut Graph, cache: &mut Marking) -> Option<MarkingId> {
+        if let Some(id) = graph.cache.get(source_id, self.next_index) {
+            self.next_index += 1;
+            return Some(id);
         } else {
-            let mut next_transition = markings.computed[self.source_id];
-            while next_transition < net.matrix.len() {
-                let mut valid = true;
+            let mut next_transition = graph.cache.pop_transition(source_id);
+            while next_transition < graph.net.matrix.len() {
+                let fired;
                 {
-                    let ref transition = net.matrix[next_transition];
-                    let ref source = markings.get(self.source_id);
-                    for i in 0..dest.len() {
-                        if source[i] >= transition.0[i] {
-                            dest[i] = source[i] - transition.0[i] + transition.1[i];
-                        } else {
-                            valid = false;
-                            break;
-                        }
-                    }
-                } // end source borrow
-                next_transition += 1;
-                if valid {
-                    let id = markings.insert(dest);
-                    markings.successors[self.source_id].push(id.clone());
-                    markings.computed[self.source_id] = next_transition;
-                    self.cache_index += 1;
+                    let ref transition = graph.net.matrix[next_transition];
+                    let ref source = graph.markings.get(source_id);
+                    fired = fire_transition(cache, source, transition)
+                } //end source borrow so that we can access the graph
+                if fired {
+                    let id = graph.markings.insert(cache);
+                    graph.cache.push_successor(source_id, id);
+                    self.next_index += 1;
                     return Some(id);
                 }
+                next_transition = graph.cache.pop_transition(source_id);
             }
         }
-        None*/
+        None
     }
 }
-*/

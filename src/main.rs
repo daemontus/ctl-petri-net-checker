@@ -19,6 +19,7 @@ use graph::*;
 use petri_net::*;
 use storage::*;
 use successors::OTFSuccessors;
+use successors::CachedSuccessors;
 
 fn main() {
     let matches = App::new("Explicit CTL checker")
@@ -56,7 +57,7 @@ fn main() {
         for formula in formulas {
             let (query, _) = Query::from_formula(&formula, &petri_net, 0);
             println!("Query: {:?}", formula);
-            println!("Result: {:?}", graph.search::<OTFSuccessors>(&query));
+            println!("Result: {:?}", graph.search::<CachedSuccessors>(&query));
         }
     }
 }
