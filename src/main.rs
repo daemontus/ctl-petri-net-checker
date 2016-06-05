@@ -8,6 +8,7 @@ mod petri_net;
 mod query;
 mod graph;
 mod storage;
+mod successors;
 
 use ctl::parser::read_formula_list_file;
 use pnml::pt_net::parser::read_pt_file;
@@ -17,6 +18,7 @@ use query::*;
 use graph::*;
 use petri_net::*;
 use storage::*;
+use successors::OTFSuccessors;
 
 fn main() {
     let matches = App::new("Explicit CTL checker")
@@ -44,17 +46,17 @@ fn main() {
     let query_num: isize = matches.value_of("number").unwrap_or("-1").parse().unwrap();
     let arena = Arena::new();
     let mut markings = MarkingSet::new(&arena);
-    let mut graph = Graph::new(&mut markings);
+    let mut graph = Graph::new(&petri_net, &mut markings);
     if query_num >= 0 {
         let (query, _) = Query::from_formula(&formulas[query_num as usize], &petri_net, 0);
         println!("Query: {:?}", formulas[query_num as usize]);
-        println!("Result: {:?}", graph.search(&petri_net, &query));
+        println!("Result: {:?}", graph.search::<OTFSuccessors>(&query));
     } else {
         //batch
         for formula in formulas {
             let (query, _) = Query::from_formula(&formula, &petri_net, 0);
             println!("Query: {:?}", formula);
-            println!("Result: {:?}", graph.search(&petri_net, &query));
+            println!("Result: {:?}", graph.search::<OTFSuccessors>(&query));
         }
     }
 }

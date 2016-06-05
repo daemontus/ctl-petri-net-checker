@@ -40,6 +40,36 @@ impl <'a> MarkingSet<'a> {
 
 }
 
+pub struct SuccessorCache {
+    successors: Vec<Vec<MarkingId>>,
+    next_transition: Vec<usize>,
+}
+
+impl SuccessorCache {
+
+    pub fn new() -> SuccessorCache {
+        SuccessorCache { successors: Vec::new(), next_transition: Vec::new() }
+    }
+
+    pub fn get(&self, marking: MarkingId, index: usize) -> Option<&MarkingId> {
+        self.successors[marking].get(index)
+    }
+
+    pub fn next_transition(&self, marking: MarkingId) -> usize {
+        //self.next_transition.get(marking).unwrap_or(0)
+        0
+    }
+
+    pub fn pop_transition(&mut self, marking: MarkingId) {
+        self.next_transition[marking] = self.next_transition[marking] + 1;
+    }
+
+    pub fn push_successor(&mut self, marking: MarkingId, successor: MarkingId) {
+        self.successors[marking].push(successor);
+    }
+
+}
+
 #[derive(Debug, Clone)]
 pub struct AssignmentSet {
     assignment: Vec<Value>
