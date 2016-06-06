@@ -141,7 +141,7 @@ fn fire_transition(t: &String, net: &PetriNet) -> Proposition {
     if let Some(&index) = net.transitions.get(&*t) {
         let vector = net.matrix[index].0.clone();
         Box::new(move |m| {     //TODO can we do it without the clone?
-            vector.clone().into_iter().zip(m.into_iter()).all(|(required, actual)| required <= *actual)
+            vector.clone().into_iter().all(|(place, required)| required <= m[place])
         })
     } else {
         panic!("Transition not found: {}", t)

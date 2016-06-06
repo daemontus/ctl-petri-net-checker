@@ -18,14 +18,19 @@ pub trait Successors {
 
 ///fire specific transition if possible and save result in dest. If transition is not valid,
 ///return false and contents of dest are undefined.
-fn fire_transition(dest: &mut Marking, source: &Marking, transition: &(Vec<u32>, Vec<u32>)) -> bool {
+fn fire_transition(dest: &mut Marking, source: &Marking, transition: &(Vec<(usize, u32)>, Vec<(usize, u32)>)) -> bool {
     let mut valid = true;
-    for i in 0..source.len() {
-        if source[i] >= transition.0[i] {
-            dest[i] = source[i] - transition.0[i] + transition.1[i];
+    dest.copy_from_slice(source);
+    for &(place, value) in &transition.0 {
+        if dest[place] >= value {
+            dest[place] -= value;
         } else {
             valid = false;
-            break;
+        }
+    }
+    if valid {
+        for &(place, value) in &transition.1 {
+            dest[place] += value;
         }
     }
     valid

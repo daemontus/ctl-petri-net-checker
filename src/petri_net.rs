@@ -11,7 +11,7 @@ pub struct PetriNet {
     pub transitions: HashMap<String, usize>,
     pub initial_marking: Marking,
     //first vector are incoming arcs, second outgoing
-    pub matrix: Vec<(Vec<u32>,Vec<u32>)>,
+    pub matrix: Vec<(Vec<(usize, u32)>,Vec<(usize, u32)>)>,
 }
 
 impl PetriNet {
@@ -32,7 +32,7 @@ impl PetriNet {
             .enumerate().map(|(a, b)| (b, a))
             .collect::<HashMap<String, usize>>();
 
-        let mut matrix = vec![(vec![0; places.len()], vec![0; places.len()]); transitions.len()];
+        let mut matrix = vec![(vec![], vec![]); transitions.len()];
 
         for event in &pt_net.elements {
             match event {
@@ -40,14 +40,14 @@ impl PetriNet {
                     if let Some(source_place) = places.get(&*source) {
                         //from place to transition
                         if let Some(target_transition) = transitions.get(&*target) {
-                            matrix[target_transition.clone()].0[source_place.clone()] = inscription.clone();
+                            matrix[target_transition.clone()].0.push((source_place.clone(), inscription.clone()));
                         } else {
                             panic!("Unknown arc target transition {}", target);
                         }
                     } else if let Some(source_transition) = transitions.get(&*source) {
                         //from transtion to place
                         if let Some(target_place) = places.get(&*target) {
-                            matrix[source_transition.clone()].1[target_place.clone()] = inscription.clone();
+                            matrix[source_transition.clone()].1.push((target_place.clone(), inscription.clone()));
                         } else {
                             panic!("Unknown arg target place {}", target);
                         }
