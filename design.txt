@@ -1,0 +1,19 @@
+- can we reduce the amount of memory being copied when generating successors?
+- adaptive marking erasure based on least visited markings
+- marking compression?
+
+Symbolic approach:
+- decomposition into components
+- increasing amount of tokens?
+
+
+Important questions:
+We are solving nested reachability. In order to do that, we need to understand reachability.
+Key to reachability are two problems:
+What if the configuration is reachable?
+  - What is the fastest way to reach that configuration?
+  - Heuristic searches and distance functions. (See AIMA)
+What if the configuration is not reachable?
+  - How to explore the entire state space fast enough?
+  - What parts of the graph can we cut off based on the proposition?
+  - What is the best way to represent the entire state space?
