@@ -51,12 +51,19 @@ impl <'a> Graph<'a> {
             ($reach:ident, $until: expr, $path:ident) => {{
                 if self.assignments[q_id].get(root_id) == Unknown {
                     let mut stack: Vec<(MarkingId, S)> = vec![(root_id, S::new())]; //DFS stack
+                    //Visited keeps track of all the stuff you encounter along the way, so that you
+                    //know what escaped the stack and should be therefore reset to Unknown.
                     let mut visited: Vec<MarkingId> = vec![root_id];
                     while let Some((source_id, mut succ)) = stack.pop() {
                         macro_rules! found_it { () => {{
                                 self.assignments[q_id].set(source_id, One);
+                                for &(s,_) in &stack {
+                                    self.assignments[q_id].set(s, One)
+                                };
                                 for s in &visited {
-                                    self.assignments[q_id].set(*s, One)
+                                    if self.assignments[q_id].get(*s) != One {
+                                        self.assignments[q_id].set(*s, Unknown);
+                                    }
                                 };
                                 return true;
                         }}}
