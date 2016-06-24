@@ -1,7 +1,7 @@
-Measured on 2012 Macbook Air (i5) with git head on: d01fb9c22861b15e10e5ab2877cbf76a7ce39a78
-real        22.58 user        22.24 sys          0.30
- 231645184  maximum resident set size
-     70361  page reclaims
+Measured on 2012 Macbook Air (i5) with git head on: d01fb9c22861b15e10e5ab2877cbf76a7ce39a78 - with successor relation caching
+real        6.59 user        6.15 sys          0.29
+ 377208832  maximum resident set size
+     92107  page reclaims
 
 
 Places: {"p14": 15, "p3": 2, "p9": 11, "p16": 25, "p22": 19, "p5": 5, "p6": 4, "p10": 12, "p20": 17, "p18": 18, "p7": 6, "p27": 20, "p25": 24, "p17": 14, "p1": 0, "p4": 3, "p11": 8, "p12": 9, "p13": 13, "p8": 10, "p19": 16, "p26": 21, "p21": 22, "p23": 23, "p15": 7, "p2": 1}
@@ -55,5 +55,5 @@ Result: false
 
 Just the first query:
 Result: false
-real         5.53
- 229400576  maximum resident set size
+real         3.96
+ 253714432  maximum resident set size
